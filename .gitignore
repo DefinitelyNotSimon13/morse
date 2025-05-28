@@ -1,0 +1,10 @@
+build
+.idea
+.cache
+.vscode
+cmake-build-*
+
+libs/boost/*
+!libs/boost/install.md
+
+compile_commands.json
