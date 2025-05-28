@@ -1,51 +1,51 @@
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
-#include <boost/log/trivial.hpp>
 #include <boost/json.hpp>
+#include <boost/log/trivial.hpp>
 #include <fstream>
 #include <iostream>
 
-#include "cat.hpp"
-
-const std::string AUTHOR_FILE = "author.json";
+#include "morse/morseCodec.hpp"
 
 
-namespace remove_me {
-void print_author();
-}
+int main() {
+    // Toggle mode: true = encode, false = decode
+    constexpr bool doEncode = false;
 
+    if constexpr (doEncode) {
+        std::cout << "===========================\n"
+                  << "    Morse Code Encoder    \n"
+                  << "===========================\n";
+        std::cout << "Enter plain text lines (Ctrl+D to exit):\n";
+    } else {
+        std::cout << "===========================\n"
+                  << "    Morse Code Decoder    \n"
+                  << "===========================\n";
+        std::cout << "Enter Morse code lines (Ctrl+D to exit):\n";
+    }
+    std::cout << std::endl;
 
-int main(int argc, char** argv) {
-    pets::Cat grievous = pets::Cat("Grievous");
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) continue;
 
-    std::cout << "Hello, there!" << std::endl;
-    grievous.meow();
+        std::string result;
+        if constexpr (doEncode) {
+            result = morse::MorseCodec::encode(line);
+        } else {
+            result = morse::MorseCodec::decodeSequence(line);
+        }
 
-    BOOST_LOG_TRIVIAL(info) << "I was logged using Boost::log`s trivial logger!";
+        // Print nicely with color for output (green) and reset
+        const char* green = "\033[1;32m";
+        const char* reset = "\033[0m";
 
-    remove_me::print_author();
-
-    return EXIT_SUCCESS;
-}
-
-void remove_me::print_author() {
-    std::ifstream ifs(AUTHOR_FILE);
-    if(!ifs) {
-        BOOST_LOG_TRIVIAL(error) << "Failed to open " << AUTHOR_FILE << "\n";
-        return;
+        std::cout << "\nInput:  " << line << "\n"
+                  << "Output: " << green << result << reset << "\n";
     }
 
-    boost::system::error_code ec;
-    boost::json::value jv = boost::json::parse(ifs, ec);
-    if(ec) {
-        BOOST_LOG_TRIVIAL(error) << "Parse error: " << ec.message() << "\n";
-        return;
-    }
-    BOOST_LOG_TRIVIAL(info) << "Successfully parsed " << AUTHOR_FILE << "\n";
-
-    // also note that Boost::json has no "pretty" output
-    // functionality - so just printing the AUTHOR_FILE would look nicer
-    std::cout << boost::json::serialize(jv) << "\n";
+    return 0;
 }
+
